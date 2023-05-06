@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Form</title>
+  <style>
+    /* Style the form container */
+    .form-container {
+        width: 400px;
+        margin: 0 auto;
+        background-color: #F9F9F9;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Style the form heading */
+    .form-heading {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    /* Style the form fields */
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="number"] {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      border: none;
+      background-color: #F1F1F1;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+      border: none;
+      background-color: #F1F1F1;
+    }
+
+    fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    legend {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    input[type="checkbox"] + label {
+      display: inline-block;
+      margin-right: 10px;
+      font-weight: normal;
+    }
+
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2 class="form-heading">Field Registration</h2>
+    <form method="post" autocomplete="on" name="google-sheet">
+      <label for="patient"><span style="color:red">*</span>Patient ID:<span style="margin-left: 230px"><button id="fetch-data-btn">click here</button></span></label>
+      <input type="text" id="patient" name="Patient ID" value"" required>
+
+      <label for="name"><span style="color:red">*</span>Name:</label>
+      <input type="text" id="name" name="Name" value="" required>
+
+      <label for="email"><span style="color:red">*</span>Email:</label>
+      <input type="email" id="email" name="Email" value"" required>
+
+      <label for="age"><span style="color:red">*</span>Age:</label>
+      <input type="number" id="age" name="Age" value"" required>
+
+      <label for="gender"><span style="color:red">*</span>Gender:</label>
+      <select id="gender" name="Gender" value"" required>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+        <option value="other">Other</option>
+      </select>
+        <label for="temperature"><span style="color:red">*</span>Temperature:</label>
+        <input type="number" id="temperature" name="Temperature" value"" required step="0.01" placeholder="Enter temperature in °C">
+
+        <label for="pulse-rate"><span style="color:red">*</span>Pulse Rate:</label>
+        <input type="number" id="pulse-rate" name="Pulse Rate" value"" required min="0" max="200" placeholder="Enter pulse rate in bpm">
+
+        <label for="blood-pressure"><span style="color:red">*</span>Blood Pressure:</label>
+        <input type="text" id="blood-pressure" name="Blood Pressure" value"" required placeholder="Enter blood pressure in mmHg">
+
+        <label for="sugar-level">Sugar Level:</label>
+        <input type="number" id="sugar-level" name="Sugar Level" step="0.01" placeholder="Enter sugar level in mg/dL">
+     
+
+      <input type="submit" value="Submit">
+    </form>
+  </div>
+  <script src="https://apis.google.com/js/api.js"></script>
+
+<script>
+  function fetchData() {
+    // get the patient ID entered by the user
+    const patientID = document.getElementById('patient').value;
+
+    // load the Google API client library
+    gapi.load('client', () => {
+      // initialize the Sheets API client
+      gapi.client.init({
+        apiKey: 'AIzaSyA79sJ_Ozs6aLAyqxnIj9iE2Y-RxVPo_D0',
+        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+      }).then(() => {
+        // fetch the data from the sheet
+        return gapi.client.sheets.spreadsheets.values.get({
+          spreadsheetId: 'https://docs.google.com/spreadsheets/d/1GWyRJRkKs5FbMcSQt2g2JBmqXLvqoSuJ2fegqVq4f6c/edit#gid=0',
+          range: 'Data!A1:I2',
+        });
+      }).then(response => {
+        const data = response.result.values;
+
+        // search for the patient ID in the sheet
+        let patientRow;
+        data.forEach(row => {
+          const id = row[0];
+          if (id === patientID) {
+            patientRow = row;
+            return;
+          }
+        });
+
+        // if patient found, auto-fill the form fields
+        if (patientRow) {
+          document.getElementById('name').value = patientRow[1];
+          document.getElementById('email').value = patientRow[2];
+          document.getElementById('address').value = patientRow[3];
+          document.getElementById('phone-number').value = patientRow[4];
+
+          // lock the form fields
+          document.getElementById('name').setAttribute('readonly', true);
+          document.getElementById('email').setAttribute('readonly', true);
+          document.getElementById('address').setAttribute('readonly', true);
+          document.getElementById('phone-number').setAttribute('readonly', true);
+        } else {
+          alert('Patient not found!');
+        }
+      }, error => {
+        console.log(error);
+      });
+    });
+  }
+  document.getElementById('fetch-data-btn').addEventListener('click', fetchData);
+</script>
+<script>
+            const scriptURL = 'https://script.google.com/macros/s/AKfycbwRyM6isoV4qZJDWK21ZxCcT8uIOA5trV-fRovl2BR4NzaQeybeknSx_SN-Mbg6ak_SQg/exec'
+            const form = document.forms['google-sheet']
+          
+            form.addEventListener('submit', e => {
+              e.preventDefault()
+              fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+                .then(response => alert("Thanks for Contacting us..! We Will Contact You Soon..."))
+                .catch(error => console.error('Error!', error.message))
+            })
+          </script>
+
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</body> 
+</html>
